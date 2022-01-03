@@ -6,14 +6,12 @@ import * as fs from "fs";
 
 const server = http.createServer();
 const basicDir = path.join(__dirname, 'public');
+const cacheAge = 3600 * 24 * 365;
 
 server.on('request', (request: IncomingMessage, response: ServerResponse) => {
-  console.log('aaaaaaaa', response.constructor);
-  console.log('method', request.method);
   const urlObj = url.parse(request.url);
   let pathName = urlObj.pathname === '/' ? '/index.html' : urlObj.pathname;
   const realPath = path.join(basicDir, pathName);
-  console.log('【路径】：', realPath);
   fs.readFile(realPath, (error, data) => {
     if (error) {
       switch (error.errno) {
@@ -34,6 +32,7 @@ server.on('request', (request: IncomingMessage, response: ServerResponse) => {
       return;
     }
     response.statusCode = 200;
+    response.setHeader('Cache-Control', `public,max-age=${cacheAge}`);
     response.end(data);
   });
 
